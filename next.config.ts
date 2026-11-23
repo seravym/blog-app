@@ -7,6 +7,9 @@ const nextConfig: NextConfig = {
   },
   cacheComponents: true,
   partialPrefetching: true,
+  outputFileTracingIncludes: {
+    '/*': ['./sqlite.db', './node_modules/better-sqlite3/build/Release/*.node'],
+  },
   turbopack: {
     rules: {
       "*.css": {
