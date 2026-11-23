@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
 type Comment = {
@@ -26,15 +26,26 @@ export default function PostDetail() {
   const [content, setContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const loadPost = async () => {
+  const loadPost = useCallback(async () => {
     const res = await fetch(`/api/posts/${id}`);
     if (res.status === 404) router.push('/not-found');
     else setPost(await res.json());
-  };
+  }, [id, router]);
 
   useEffect(() => {
-    loadPost();
-  }, [id]);
+    const controller = new AbortController();
+
+    fetch(`/api/posts/${id}`, { signal: controller.signal })
+      .then(async (res) => {
+        if (res.status === 404) router.push('/not-found');
+        else setPost(await res.json());
+      })
+      .catch(() => {
+        
+      });
+
+    return () => controller.abort();
+  }, [id, router]);
 
   const handleDelete = async () => {
     await fetch(`/api/posts/${id}`, { method: 'DELETE' });
